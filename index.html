@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>^("▔□▔)^</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="logo">
+                <i class="fas fa-music"></i>
+                <h1>B站术力口分区数据</h1>
+            </div>
+            <p class="subtitle">每日Original/Cover视频统计与展示</p>
+            <div class="stats-bar" id="stats-bar">
+                <div class="stat">
+                    <span class="stat-label">总天数</span>
+                    <span class="stat-value" id="total-days">0</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">Original</span>
+                    <span class="stat-value" id="total-original">0</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">Cover</span>
+                    <span class="stat-value" id="total-cover">0</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">最后更新</span>
+                    <span class="stat-value" id="last-updated">-</span>
+                </div>
+            </div>
+        </header>
+
+        <div class="filter-container">
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="search-input" placeholder="搜索视频标题、作者或标签...">
+                <button id="clear-search" class="btn-clear">清空</button>
+            </div>
+            
+            <div class="filter-options">
+                <div class="filter-group">
+                    <span class="filter-label">类型筛选：</span>
+                    <div class="filter-buttons">
+                        <button class="filter-btn active" data-type="all">全部</button>
+                        <button class="filter-btn" data-type="Original">Original</button>
+                        <button class="filter-btn" data-type="Cover">Cover</button>
+                    </div>
+                </div>
+                
+                <div class="filter-group">
+                    <span class="filter-label">排序方式：</span>
+                    <div class="filter-buttons">
+                        <button class="filter-btn active" data-sort="date-desc">日期 ▼</button>
+                        <button class="filter-btn" data-sort="date-asc">日期 ▲</button>
+                        <button class="filter-btn" data-sort="count-desc">数量 ▼</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="dates-container" id="dates-container">
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>正在加载数据...</p>
+            </div>
+        </div>
+
+        <div class="modal" id="video-modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 id="modal-title"></h2>
+                    <button class="close-modal">&times;</button>
+                </div>
+                <div class="modal-body" id="modal-body"></div>
+                <div class="modal-footer">
+                    <button class="btn-secondary close-modal">关闭</button>
+                    <a href="#" id="bilibili-link" target="_blank" class="btn-primary">
+                        <i class="fab fa-bilibili"></i> 前往B站观看
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
