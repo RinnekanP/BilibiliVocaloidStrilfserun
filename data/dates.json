@@ -1,8 +1,8 @@
 {
-  "last_updated": "2026-01-05 19:06:21",
+  "last_updated": "2026-01-05 19:58:08",
   "total_videos": 310,
   "total_original": 141,
-  "total_cover": 168,
+  "total_cover": 169,
   "total_days": 2,
   "dates": {
     "2026-01-04": {
@@ -23,7 +23,7 @@
       "path": "data/videos_20260103.json",
       "total_videos": 171,
       "original_count": 86,
-      "cover_count": 84,
+      "cover_count": 85,
       "other_count": 0,
       "sort_key": "20260103"
     }
