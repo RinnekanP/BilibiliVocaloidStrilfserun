@@ -14,7 +14,19 @@
       "original_count": 55,
       "cover_count": 84,
       "other_count": 0,
-      "sort_key": "20260104"
+      "sort_key": "20260104",
+
+    "dates": {
+    "2026-01-03": {
+      "date": "20260103",
+      "display_date": "2026-01-03",
+      "filename": "videos_20260103.json",
+      "path": "data/videos_20260103.json",
+      "total_videos": 171,
+      "original_count": 86,
+      "cover_count": 84,
+      "other_count": 0,
+      "sort_key": "20260103"
     }
   }
 }
