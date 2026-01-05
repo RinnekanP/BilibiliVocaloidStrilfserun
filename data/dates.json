@@ -1,9 +1,9 @@
 {
   "last_updated": "2026-01-05 19:06:21",
-  "total_videos": 139,
-  "total_original": 55,
-  "total_cover": 84,
-  "total_days": 1,
+  "total_videos": 310,
+  "total_original": 141,
+  "total_cover": 168,
+  "total_days": 2,
   "dates": {
     "2026-01-04": {
       "date": "20260104",
@@ -15,6 +15,8 @@
       "cover_count": 84,
       "other_count": 0,
       "sort_key": "20260104",
+      }
+  }
 
     "dates": {
     "2026-01-03": {
@@ -27,6 +29,5 @@
       "cover_count": 84,
       "other_count": 0,
       "sort_key": "20260103"
-    }
   }
 }
