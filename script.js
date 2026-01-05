@@ -147,8 +147,8 @@ async function loadDatesData() {
         let dates = Object.entries(datesData);
         
         dates.sort((a, b) => {
-            const dateA = a[1].sort_Key;
-            const dateB = b[1].sort_Key;
+            const dateA = a[1].sort_key;
+            const dateB = b[1].sort_key;
             
             switch (currentSort) {
                 case 'date-asc':
