@@ -90,7 +90,12 @@ async function loadDatesData() {
         
         const data = await response.json();
         console.log('dates.json 加载成功:', data);
-        datesData = data.dates;
+        
+        if (!data || !data.dates) {
+            throw new Error('数据格式错误：缺少 dates 字段');
+        }
+        
+        datesData = data.dates || {};
         
         updateStats(data);
         
@@ -101,6 +106,9 @@ async function loadDatesData() {
     } catch (error) {
         console.error('加载数据失败:', error);
         showError(`无法加载数据: ${error.message}<br>请检查网络连接或数据文件`);
+        if (loadingElement) {
+            loadingElement.style.display = 'none';
+        }
     }
 }
     
@@ -141,21 +149,31 @@ async function loadDatesData() {
     function renderDates() {
         if (Object.keys(datesData).length === 0) {
             datesContainer.innerHTML = '<div class="no-data">暂无数据</div>';
+            loadingElement.style.display = 'none';
             return;
         }
         
         let dates = Object.entries(datesData);
         
+        if (dates.length === 0) {
+            datesContainer.innerHTML = '<div class="no-data">暂无数据</div>';
+            loadingElement.style.display = 'none';
+            return;
+        }
+        
         dates.sort((a, b) => {
-            const dateA = a[1].sort_key;
-            const dateB = b[1].sort_key;
+            const dateA = a[1]?.sort_key || '';
+            const dateB = b[1]?.sort_key || '';
+            
+            const infoA = a[1] || {};
+            const infoB = b[1] || {};
             
             switch (currentSort) {
                 case 'date-asc':
                     return dateA.localeCompare(dateB);
                 case 'count-desc':
-                    const countA = a[1].total_videos;
-                    const countB = b[1].total_videos;
+                    const countA = infoA.total_videos || 0;
+                    const countB = infoB.total_videos || 0;
                     return countB - countA;
                 case 'date-desc':
                 default:
@@ -414,7 +432,6 @@ async function loadDatesData() {
             { label: '作者', value: video.作者, icon: 'user' },
             { label: '分类', value: video.分类, icon: 'tag' },
             { label: '原创性', value: video.原创性, icon: 'certificate' },
-            { label: '子分区', value: video.子分区, icon: 'folder' },
             { label: '时长', value: video.时长, icon: 'clock' }
         ];
         
