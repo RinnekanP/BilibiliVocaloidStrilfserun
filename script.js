@@ -78,25 +78,31 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    async function loadDatesData() {
-        try {
-            const response = await fetch('data/dates.json');
-            if (!response.ok) throw new Error('无法加载日期索引');
-            
-            const data = await response.json();
-            datesData = data.dates;
-            
-            updateStats(data);
-            
-            await loadAllVideos();
-            
-            renderDates();
-            
-        } catch (error) {
-            console.error('加载数据失败:', error);
-            showError('无法加载数据，请检查网络连接或数据文件');
+async function loadDatesData() {
+    try {
+        console.log('正在加载 dates.json...');
+        const response = await fetch('data/dates.json');
+        
+        if (!response.ok) {
+            console.error('HTTP 错误:', response.status, response.statusText);
+            throw new Error(`无法加载日期索引: ${response.status} ${response.statusText}`);
         }
+        
+        const data = await response.json();
+        console.log('dates.json 加载成功:', data);
+        datesData = data.dates;
+        
+        updateStats(data);
+        
+        await loadAllVideos();
+        
+        renderDates();
+        
+    } catch (error) {
+        console.error('加载数据失败:', error);
+        showError(`无法加载数据: ${error.message}<br>请检查网络连接或数据文件`);
     }
+}
     
     async function loadAllVideos() {
         allVideos = {};
