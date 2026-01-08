@@ -1,10 +1,21 @@
 {
-  "last_updated": "2026-01-06 19:03:13",
-  "total_videos": 443,
-  "total_original": 211,
-  "total_cover": 232,
-  "total_days": 3,
+  "last_updated": "2026-01-08 13:02:33",
+  "total_videos": 503,
+  "total_original": 230,
+  "total_cover": 273,
+  "total_days": 4,
   "dates": {
+    "2026-01-06": {
+      "date": "20260106",
+      "display_date": "2026-01-06",
+      "filename": "videos_20260106.json",
+      "path": "data/videos_20260106.json",
+      "total_videos": 60,
+      "original_count": 19,
+      "cover_count": 41,
+      "other_count": 0,
+      "sort_key": "20260106"
+    },
     "2026-01-05": {
       "date": "20260105",
       "display_date": "2026-01-05",
