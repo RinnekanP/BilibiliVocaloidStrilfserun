@@ -4,6 +4,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let currentFilter = 'all';
     let currentSort = 'date-desc';
     let currentSearch = '';
+    let searchTimeout;
     
     const datesContainer = document.getElementById('dates-container');
     const loadingElement = document.getElementById('loading');
@@ -27,12 +28,17 @@ document.addEventListener('DOMContentLoaded', function() {
     function init() {
         loadDatesData();
         setupEventListeners();
+        showSkeleton();
     }
     
     function setupEventListeners() {
         searchInput.addEventListener('input', function(e) {
+            clearTimeout(searchTimeout);
             currentSearch = e.target.value.toLowerCase();
-            renderDates();
+            
+            searchTimeout = setTimeout(() => {
+                renderDates();
+            }, 300);
         });
         
         clearSearchBtn.addEventListener('click', function() {
@@ -80,16 +86,13 @@ document.addEventListener('DOMContentLoaded', function() {
     
 async function loadDatesData() {
     try {
-        console.log('正在加载 dates.json...');
         const response = await fetch('data/dates.json');
         
         if (!response.ok) {
-            console.error('HTTP 错误:', response.status, response.statusText);
-            throw new Error(`无法加载日期索引: ${response.status} ${response.statusText}`);
+            throw new Error(`${response.status} ${response.statusText}`);
         }
         
         const data = await response.json();
-        console.log('dates.json 加载成功:', data);
         
         if (!data || !data.dates) {
             throw new Error('数据格式错误：缺少 dates 字段');
@@ -99,13 +102,17 @@ async function loadDatesData() {
         
         updateStats(data);
         
+        prefetchImportantData();
+        
+        renderSkeletonDates();
+        
         await loadAllVideos();
         
         renderDates();
         
     } catch (error) {
         console.error('加载数据失败:', error);
-        showError(`无法加载数据: ${error.message}<br>请检查网络连接或数据文件`);
+        showError(`无法加载数据: ${error.message}`);
         if (loadingElement) {
             loadingElement.style.display = 'none';
         }
@@ -115,12 +122,34 @@ async function loadDatesData() {
     async function loadAllVideos() {
         allVideos = {};
         
-        for (const [dateDisplay, dateInfo] of Object.entries(datesData)) {
+        const loadPromises = Object.entries(datesData).map(async ([dateDisplay, dateInfo]) => {
             try {
-                const response = await fetch(dateInfo.path);
-                if (!response.ok) continue;
+                const cacheKey = `video_data_${dateInfo.date}`;
+                const cached = sessionStorage.getItem(cacheKey);
+                
+                if (cached) {
+                    const videos = JSON.parse(cached);
+                    videos.forEach(video => {
+                        video.date = dateDisplay;
+                        video.dateKey = dateInfo.date;
+                    });
+                    allVideos[dateDisplay] = videos;
+                    return;
+                }
+                
+                const response = await fetch(dateInfo.path, {
+                    headers: {
+                        'Cache-Control': 'max-age=3600'
+                    }
+                });
+                
+                if (!response.ok) return;
                 
                 const videos = await response.json();
+                
+                try {
+                    sessionStorage.setItem(cacheKey, JSON.stringify(videos));
+                } catch (e) {}
                 
                 videos.forEach(video => {
                     video.date = dateDisplay;
@@ -134,9 +163,11 @@ async function loadDatesData() {
                 allVideos[dateDisplay] = videos;
                 
             } catch (error) {
-                console.error(`加载 ${dateInfo.filename} 失败:`, error);
+                console.warn(`加载 ${dateInfo.filename} 异常:`, error);
             }
-        }
+        });
+        
+        await Promise.allSettled(loadPromises);
     }
     
     function updateStats(data) {
@@ -144,6 +175,45 @@ async function loadDatesData() {
         totalOriginalEl.textContent = data.total_original || 0;
         totalCoverEl.textContent = data.total_cover || 0;
         lastUpdatedEl.textContent = formatDateTime(data.last_updated);
+    }
+    
+    function prefetchImportantData() {
+        const recentDates = Object.entries(datesData)
+            .sort((a, b) => b[1].sort_key.localeCompare(a[1].sort_key))
+            .slice(0, 7);
+        
+        recentDates.forEach(([dateDisplay, dateInfo]) => {
+            const cacheKey = `video_data_${dateInfo.date}`;
+            if (!sessionStorage.getItem(cacheKey)) {
+                fetch(dateInfo.path)
+                    .then(response => response.json())
+                    .then(videos => {
+                        sessionStorage.setItem(cacheKey, JSON.stringify(videos));
+                    })
+                    .catch(() => {});
+            }
+        });
+    }
+    
+    function renderSkeletonDates() {
+        const dates = Object.entries(datesData);
+        
+        const skeletonHTML = dates.map(([dateDisplay, dateInfo]) => `
+            <div class="date-card skeleton-card">
+                <div class="date-header">
+                    <div class="date-title">
+                        <div class="skeleton skeleton-text" style="width: 200px; height: 24px;"></div>
+                    </div>
+                    <div class="date-stats">
+                        <div class="skeleton skeleton-text" style="width: 80px; height: 20px;"></div>
+                        <div class="skeleton skeleton-text" style="width: 60px; height: 20px;"></div>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+        
+        datesContainer.innerHTML = skeletonHTML;
+        loadingElement.style.display = 'none';
     }
     
     function renderDates() {
@@ -226,16 +296,17 @@ async function loadDatesData() {
     }
     
     function matchesSearch(video, searchTerm) {
-        const searchFields = [
-            video.标题 || '',
-            video.作者 || '',
-            video.标签 || '',
-            video.简介 || '',
-            video.动态文案 || '',
-            video.分类 || ''
-        ].join(' ').toLowerCase();
+        if (!searchTerm.trim()) return true;
         
-        return searchFields.includes(searchTerm);
+        if (video.标题 && video.标题.toLowerCase().includes(searchTerm)) return true;
+        if (video.作者 && video.作者.toLowerCase().includes(searchTerm)) return true;
+        if (video.标签 && video.标签.toLowerCase().includes(searchTerm)) return true;
+        if (video.分类 && video.分类.toLowerCase().includes(searchTerm)) return true;
+        
+        if (video.简介 && video.简介.toLowerCase().includes(searchTerm)) return true;
+        if (video.动态文案 && video.动态文案.toLowerCase().includes(searchTerm)) return true;
+        
+        return false;
     }
     
     function createDateCard(dateDisplay, dateInfo) {
@@ -535,6 +606,26 @@ async function loadDatesData() {
             ${descriptionHTML}
             ${dynamicHTML}
         `;
+    }
+    
+    function showSkeleton() {
+        const container = document.getElementById('dates-container');
+        const skeletonHTML = `
+            <div class="skeleton-card">
+                <div class="skeleton skeleton-text" style="width: 60%; height: 24px; margin-bottom: 15px;"></div>
+                <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                    <div class="skeleton skeleton-text" style="width: 100px; height: 20px;"></div>
+                    <div class="skeleton skeleton-text" style="width: 80px; height: 20px;"></div>
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 15px;">
+                    ${Array(6).fill(0).map(() => `
+                        <div class="skeleton" style="height: 120px; border-radius: 8px;"></div>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+        
+        container.innerHTML = skeletonHTML.repeat(3);
     }
     
     function showError(message) {
